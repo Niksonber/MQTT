@@ -5,7 +5,7 @@ import time
 
 
 class Broker():
-    def __init__(self, port = 41024):
+    def __init__(self, port = 45024):
         self.nextID = 0
         self.clientsId = {}
         self.topics = {}
@@ -23,10 +23,13 @@ class Broker():
         self.s.listen(100)
         self.selector.register(self.s, selectors.EVENT_READ, self.accept)
         while self.running>0:
-            for key, mask in self.selector.select(timeout=1):
-                cb = key.data
-                cb(key.fileobj, mask)
-        print('shutting down')
+            try:
+                for key, mask in self.selector.select(timeout=1):
+                    cb = key.data
+                    cb(key.fileobj, mask)
+            except:
+                break
+        print('Desligando Broker')
         self.selector.close()
 
     def accept(self, sock, mask):
@@ -64,7 +67,7 @@ class Broker():
                 rsp = self.sub(socket, msg)
 
             elif code == 'UNSUBSCRIBE':
-                rsp = self.sub(socket, msg)
+                rsp = self.unsub(socket, msg)
 
             socket.send(rsp.encode())
         else:
@@ -81,17 +84,17 @@ class Broker():
     def publish(self, socket, mask):
         msg = socket.recv(1024)
         if msg:
-            msg = self.prepareMsg(msg)
-            code = msg[0]
+            msg2 = self.prepareMsg(msg)
+            code = msg2[0]
             if code == 'PUBLISH':
-                node = msg[1]
-                payload = msg[2]
+                node = msg2[1]
+                payload = msg2[2]
                 if payload!='':
                     self.topicsLastMsg[node] = payload
                     rsp = 'PUBACK' + '!@!' + payload
                     for client in self.topics[node]:
-                        print(client)
-                        client.send(payload.encode())
+                        print(msg)
+                        client.send(msg)
             elif code == 'PINGREQ':
                 rsp = 'PINGRESP'
             socket.send(rsp.encode())
@@ -123,30 +126,8 @@ class Broker():
                 break
         return rsp
 
-    def handle(self, socket, addr):
-        print('Novo cliente: {0}/{1}'.format(addr[0], addr[1]))
-        msg = socket.recv(1024)
-        msg = msg.decode()
-        msg = msg.split('!@!')
-        code = msg[0]
-        if code == 'CONNECT':
-            self.clientsId[self.nextID] = (socket, 0.0)
-            self.nextID +=1 
-            rsp = 'CONNACK'
-        
-        elif code == 'DISCONNECT':
-            pass
-            # self.clientsId 
-
-        elif code == 'PUBLISH':
-            #cria no de comunicação
-            x = Thread(target=self.pub, args=(socket,addr, msg))
-            x.start()
-        elif code == 'SUBSCRIBE':
-            self.sub(socket, addr, msg)
 
 
 if __name__ == "__main__":        
-
     b = Broker()
     b.run()
