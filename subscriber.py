@@ -19,7 +19,7 @@ import sys
 # s.close()
 
 class Subscriber():
-    def __init__(self, topics, port = 45024):
+    def __init__(self, topics, port = 46024):
         self.port = port
         self.topics = ''
         for indx, topic in enumerate(topics):
@@ -32,21 +32,23 @@ class Subscriber():
         serverAddress = ('localhost', self.port)
         self.s = socket.socket()
         self.s.connect(serverAddress)
-        self.s.send(b'SUBSCRIBE!@!m12' + self.topics)
+        self.s.send(b'SUBSCRIBE!@!' + self.topics)
         while True:
             try:
                 msg = self.s.recv(1024)
-                print(msg)
+                if msg != b'':
+                    print('Mensagem recebida: ')
+                    print(msg)
             except:
                 print('deseja encerrar alguma inscrição')
-                r = input('1- Sim, 2 -Não')
+                r = input('1- Sim, 2 -Não ')
                 if r == '1':
-                    r = input('Qual')
-                    self.s.send(b'UNSUBSCRIBE!@!m12' + r.encode())
+                    r = input('Qual ?(somente 1 por vez) ')
+                    self.s.send(b'UNSUBSCRIBE!@!' + r.encode())
                     continue
                 else:
-                    print('encerrando')
-            break
+                    print('Desconectaando')
+                    break
         self.s.close()
 
 if __name__ == "__main__":

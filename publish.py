@@ -13,7 +13,7 @@ import sys
 # s.close()
 
 class Publish():
-    def __init__(self, topic, file, time, port = 45024):
+    def __init__(self, topic, file, time, port = 46024):
         self.port = port
         self.topic = topic
         self.file = file

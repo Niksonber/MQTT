@@ -5,7 +5,7 @@ import time
 
 
 class Broker():
-    def __init__(self, port = 45024):
+    def __init__(self, port = 46024):
         self.nextID = 0
         self.clientsId = {}
         self.topics = {}
@@ -31,6 +31,7 @@ class Broker():
                 break
         print('Desligando Broker')
         self.selector.close()
+        self.s.close()
 
     def accept(self, sock, mask):
         c, addr = sock.accept()
@@ -74,7 +75,7 @@ class Broker():
             print('Fechando')
             self.selector.unregister(socket)
             socket.close()
-            self.running -= 1
+            #self.running -= 1
 
     def prepareMsg(self,msg):
         msg = msg.decode()
@@ -93,6 +94,7 @@ class Broker():
                     self.topicsLastMsg[node] = payload
                     rsp = 'PUBACK' + '!@!' + payload
                     for client in self.topics[node]:
+                        print('encaminhando mensagam para inscrito')
                         print(msg)
                         client.send(msg)
             elif code == 'PINGREQ':
@@ -104,6 +106,7 @@ class Broker():
             socket.close()
             self.running -= 1
 
+
     def sub(self, socket, msg):
         rsp = 'padrao'
         for topic in msg[1:]:
@@ -111,7 +114,7 @@ class Broker():
                 self.topics[topic].append(socket)
                 rsp = 'SUBACK' + '!@!' + topic
             except:
-                self.running-=1
+                #self.running-=1
                 break
         return rsp
 
