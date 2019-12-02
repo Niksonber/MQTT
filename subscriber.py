@@ -19,7 +19,7 @@ import sys
 # s.close()
 
 class Subscriber():
-    def __init__(self, topics, port = 46024):
+    def __init__(self, topics, port = 43024):
         self.port = port
         self.topics = ''
         for indx, topic in enumerate(topics):

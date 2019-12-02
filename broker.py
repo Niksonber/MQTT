@@ -5,7 +5,7 @@ import time
 
 
 class Broker():
-    def __init__(self, port = 46024):
+    def __init__(self, port = 43024):
         self.nextID = 0
         self.clientsId = {}
         self.topics = {}
@@ -30,8 +30,8 @@ class Broker():
             except:
                 break
         print('Desligando Broker')
-        self.selector.close()
         self.s.close()
+        self.selector.close()
 
     def accept(self, sock, mask):
         c, addr = sock.accept()
@@ -62,12 +62,15 @@ class Broker():
                 node, payload = msg[1], msg[2]
                 self.topics[node] = []
                 rsp = 'PUBACK' + '!@!' + payload
+                print('Novo no: {0}'.format(node))
                 self.selector.register(socket, selectors.EVENT_READ, self.publish)
 
             elif code == 'SUBSCRIBE':
+                print('Novo inscrito, topico: {0}'.format (msg[1]))
                 rsp = self.sub(socket, msg)
 
             elif code == 'UNSUBSCRIBE':
+                print('inscrito removido, topico: {0}'.format (msg[1]))
                 rsp = self.unsub(socket, msg)
 
             socket.send(rsp.encode())
@@ -83,6 +86,8 @@ class Broker():
         return msg
 
     def publish(self, socket, mask):
+        addr = socket.getpeername()
+        print('pub chegou de: ({})'.format(addr))
         msg = socket.recv(1024)
         if msg:
             msg2 = self.prepareMsg(msg)
@@ -122,10 +127,10 @@ class Broker():
         rsp = 'padrao'
         for topic in msg[1:]:
             try:
-                self.topics[topic].append(socket)
-                rsp = 'SUBACK' + '!@!' + topic
+                self.topics[topic].remove(socket)
+                rsp = 'UNSUBACK' + '!@!' + topic
             except:
-                self.running-=1
+                #self.running-=1
                 break
         return rsp
 

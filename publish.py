@@ -13,7 +13,7 @@ import sys
 # s.close()
 
 class Publish():
-    def __init__(self, topic, file, time, port = 46024):
+    def __init__(self, topic, file, time, port = 43024):
         self.port = port
         self.topic = topic
         self.file = file
@@ -24,7 +24,7 @@ class Publish():
         serverAddress = ('localhost', self.port)
         self.s = socket.socket()
         self.s.connect(serverAddress)
-        print('concetou')
+        print('conectando a servidor')
         with open(self.file) as f:
             for line in f:
                 try:
