@@ -5,7 +5,7 @@ import time
 
 
 class Broker():
-    def __init__(self, port = 43024):
+    def __init__(self, port = 41024):
         self.nextID = 0
         self.clientsId = {}
         self.topics = {}
@@ -49,7 +49,7 @@ class Broker():
             code = msg[0]
 
             if code == 'CONNECT':
-                self.clientsId[self.nextID] = (socket, 0.0)
+                self.clientsId[socket] = (self.nextID, 0.0)
                 self.nextID +=1 
                 rsp = 'CONNACK'
 
